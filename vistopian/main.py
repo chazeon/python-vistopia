@@ -93,7 +93,7 @@ def save_show(ctx, **argv):
 @main.command("save-transcript")
 @click.option("--id", type=click.INT, required=True)
 @click.pass_context
-def save_show(ctx, **argv):
+def save_transcript(ctx, **argv):
 
     content_id = argv.pop("id")
     logger.debug(json.dumps(ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
