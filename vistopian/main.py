@@ -89,5 +89,17 @@ def save_show(ctx, **argv):
 
     ctx.obj.visitor.save_show(content_id, argv.pop("no_tag"))
 
+
+@main.command("save-transcript")
+@click.option("--id", type=click.INT, required=True)
+@click.pass_context
+def save_show(ctx, **argv):
+
+    content_id = argv.pop("id")
+    logger.debug(json.dumps(ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+
+    ctx.obj.visitor.save_transcript(content_id)
+
+
 if __name__ == "__main__":
     main()
