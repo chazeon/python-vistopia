@@ -1,3 +1,4 @@
 requests
 mutagen
 click
+tabulate
