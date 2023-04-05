@@ -69,6 +69,31 @@ class Visitor:
                 if not no_cover:
                     self.retag_cover(str(fname), article, catalog, series)
  
+    def save_transcript(self, id: int):
+
+        from pathlib import Path
+
+        catalog = self.get_catalog(id)
+
+        show_dir = Path(catalog["title"])
+        show_dir.mkdir(exist_ok=True)
+
+        for part in catalog["catalog"]:
+            for article in part["part"]:
+                fname = show_dir / "{}.html".format(article["title"])
+                if not fname.exists():
+                    urlretrieve(article["content_url"], fname)
+
+                    with open(fname) as f:
+                        content = f.read()
+
+                    content = content.replace(
+                        "/assets/article/course.css",
+                        "https://api.vistopia.com.cn/assets/article/course.css"
+                    )
+
+                    with open(fname, "w") as f:
+                        f.write(content)
 
     @staticmethod
     def retag(fname, article_info, catalog_info, series_info):
