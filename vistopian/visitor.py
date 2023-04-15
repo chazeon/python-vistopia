@@ -4,7 +4,6 @@ from urllib.request import urlretrieve, urlcleanup
 from logging import getLogger
 from functools import lru_cache
 
-
 logger = getLogger(__name__)
 
 
@@ -27,7 +26,6 @@ class Visitor:
 
         return response["data"]
 
-
     @lru_cache()
     def get_catalog(self, id: int):
         response = self.get_api_response(f"content/catalog/{id}")
@@ -40,6 +38,13 @@ class Visitor:
             response = self.get_api_response(f"user/subscriptions-list")
             data.extend(response["data"])
             break
+        return data
+
+    @lru_cache()
+    def search(self, keyword: str):
+        data = []
+        response = self.get_api_response(f"search/web", {'keyword': keyword})
+        data.extend(response["data"])
         return data
 
     @lru_cache()
@@ -65,10 +70,10 @@ class Visitor:
 
                 if not no_tag:
                     self.retag(str(fname), article, catalog, series)
-    
+
                 if not no_cover:
                     self.retag_cover(str(fname), article, catalog, series)
- 
+
     def save_transcript(self, id: int):
 
         from pathlib import Path
@@ -102,13 +107,12 @@ class Visitor:
 
         track = EasyID3(fname)
         track["title"] = article_info["title"]
-        track["album"]= series_info["title"]
+        track["album"] = series_info["title"]
         track["artist"] = series_info["author"]
         track["tracknumber"] = article_info["sort_number"]
-        #track["tracksort"] = article_info["sort_number"]
+        # track["tracksort"] = article_info["sort_number"]
         track["website"] = article_info["content_url"]
         track.save()
-
 
     @staticmethod
     def retag_cover(fname, article_info, catalog_info, series_info):

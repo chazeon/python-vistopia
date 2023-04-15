@@ -1,11 +1,11 @@
-import click
 import json
 import logging
 from logging import getLogger
-from pprint import pprint
-from visitor import Visitor
+
+import click
 from tabulate import tabulate
 
+from visitor import Visitor
 
 logger = getLogger(__name__)
 
@@ -14,6 +14,7 @@ class Context:
     def __init__(self):
         self.token: str = None
         self.visitor: Visitor = None
+
 
 # def _print_table(list):
 #     table = tabulate()
@@ -24,8 +25,6 @@ class Context:
 @click.option("-v", "--verbosity", default="INFO", help="Logging level")
 @click.pass_context
 def main(ctx, **argv):
-
-
     verbosity = argv.pop("verbosity").upper()
     logging.basicConfig(format='%(asctime)s %(message)s', level=verbosity)
 
@@ -35,10 +34,33 @@ def main(ctx, **argv):
     ctx.obj.visitor = Visitor(token=token)
 
 
+@main.command("search")
+@click.option("--keyword", "-k", type=click.STRING, required=True)
+@click.pass_context
+def search(ctx, **argv):
+    visitor: Visitor = ctx.obj.visitor
+    search_result_list = visitor.search(argv.pop("keyword"))
+    logging.debug(json.dumps(search_result_list, indent=2, ensure_ascii=False))
+
+    table = []
+    for item in search_result_list:
+        if item['data_type'] != 'content':
+            continue
+        author = item['author']
+        if item['subtitle']:
+            title = ": ".join([item['title'], item['subtitle']])
+        else:
+            title = item['title']
+        desc = item['share_desc']
+        content_id = item['id']
+        table.append((author, title, desc, content_id))
+
+    click.echo(tabulate(table))
+
+
 @main.command("subscriptions")
 @click.pass_context
 def subscriptions(ctx):
-
     visitor: Visitor = ctx.obj.visitor
 
     logger.debug(visitor.get_user_subscriptions_list())
@@ -56,7 +78,6 @@ def subscriptions(ctx):
 @click.option("--id", type=click.INT, required=True)
 @click.pass_context
 def show_content(ctx, **argv):
-
     visitor: Visitor = ctx.obj.visitor
 
     content_id = argv.pop("id")
@@ -77,13 +98,11 @@ def show_content(ctx, **argv):
     click.echo(tabulate(table))
 
 
-
 @main.command("save-show")
 @click.option("--id", type=click.INT, required=True)
 @click.option("--no-tag", is_flag=True, default=False, help="Do not add IDv3 tags.")
 @click.pass_context
 def save_show(ctx, **argv):
-
     content_id = argv.pop("id")
     logger.debug(json.dumps(ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
@@ -94,7 +113,6 @@ def save_show(ctx, **argv):
 @click.option("--id", type=click.INT, required=True)
 @click.pass_context
 def save_transcript(ctx, **argv):
-
     content_id = argv.pop("id")
     logger.debug(json.dumps(ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
