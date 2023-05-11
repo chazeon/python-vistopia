@@ -16,7 +16,9 @@ class Visitor:
 
         url = urljoin("https://api.vistopia.com.cn/api/v1/", uri)
 
-        if params == None: params = {}
+        if params == None:
+            params = {}
+
         params.update({"api_token": self.token})
 
         logger.debug(f"Visiting {url}")
@@ -26,7 +28,6 @@ class Visitor:
         assert "data" in response.keys()
 
         return response["data"]
-
 
     @lru_cache()
     def get_catalog(self, id: int):
@@ -65,10 +66,10 @@ class Visitor:
 
                 if not no_tag:
                     self.retag(str(fname), article, catalog, series)
-    
+
                 if not no_cover:
                     self.retag_cover(str(fname), article, catalog, series)
- 
+
     def save_transcript(self, id: int):
 
         from pathlib import Path
@@ -102,13 +103,12 @@ class Visitor:
 
         track = EasyID3(fname)
         track["title"] = article_info["title"]
-        track["album"]= series_info["title"]
+        track["album"] = series_info["title"]
         track["artist"] = series_info["author"]
         track["tracknumber"] = article_info["sort_number"]
-        #track["tracksort"] = article_info["sort_number"]
+        # track["tracksort"] = article_info["sort_number"]
         track["website"] = article_info["content_url"]
         track.save()
-
 
     @staticmethod
     def retag_cover(fname, article_info, catalog_info, series_info):
@@ -126,5 +126,6 @@ class Visitor:
         cover = _get_cover(catalog_info["background_img"])
 
         track = ID3(fname)
-        track["APIC"] = APIC(encoding=3, mime="image/jpeg", type=3, desc="Cover", data=cover)
+        track["APIC"] = APIC(encoding=3, mime="image/jpeg",
+                             type=3, desc="Cover", data=cover)
         track.save()
