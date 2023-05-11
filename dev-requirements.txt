@@ -1,0 +1,4 @@
+autopep8
+pytest
+pytest-cov
+pytest_click
