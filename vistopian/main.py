@@ -5,6 +5,7 @@ from logging import getLogger
 from pprint import pprint
 from visitor import Visitor
 from tabulate import tabulate
+from os import environ
 
 
 logger = getLogger(__name__)
@@ -25,11 +26,12 @@ class Context:
 @click.pass_context
 def main(ctx, **argv):
 
-
     verbosity = argv.pop("verbosity").upper()
     logging.basicConfig(format='%(asctime)s %(message)s', level=verbosity)
 
-    token = argv.pop("token", None)
+    token = environ.get("VISTOPIA_API_TOKEN", None)
+    token = argv.get("token", None) or token
+    logging.debug(f"API token `{token}` received.")
 
     ctx.obj = Context()
     ctx.obj.visitor = Visitor(token=token)
