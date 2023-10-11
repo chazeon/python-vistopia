@@ -12,7 +12,7 @@ pip3 install -r requirements.txt
 
 ### 运行
 
-需自行通过抓包获取 API 令牌（token）。
+需自行通过抓包获取 API 令牌（token），部分开放节目（如《八分》）无须令牌。
 
 执行以下命令运行：
 ```
