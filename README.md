@@ -1,5 +1,7 @@
 # 看理想命令行客户端 / 下载器
 
+[![codecov](https://codecov.io/gh/chazeon/python-vistopia/graph/badge.svg?token=UESNMCBB87)](https://codecov.io/gh/chazeon/python-vistopia)
+
 ## 用法
 
 ### 安装
