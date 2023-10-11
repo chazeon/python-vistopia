@@ -2,7 +2,6 @@ import click
 import json
 import logging
 from logging import getLogger
-from pprint import pprint
 from visitor import Visitor
 from tabulate import tabulate
 from os import environ
@@ -20,6 +19,7 @@ class Context:
 #     table = tabulate()
 #     click.echo(table)
 
+
 @click.group()
 @click.option("-t", "--token", help="API token")
 @click.option("-v", "--verbosity", default="INFO", help="Logging level")
@@ -31,7 +31,7 @@ def main(ctx, **argv):
 
     token = environ.get("VISTOPIA_API_TOKEN", None)
     token = argv.get("token", None) or token
-    logging.debug(f"API token `{token}` received.")
+    logger.debug(f"API token `{token}` received.")
 
     ctx.obj = Context()
     ctx.obj.visitor = Visitor(token=token)
@@ -63,7 +63,8 @@ def show_content(ctx, **argv):
 
     content_id = argv.pop("id")
     logger.debug(visitor.get_content_show(content_id))
-    logger.debug(json.dumps(visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+    logger.debug(json.dumps(
+        visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
     table = []
     catalog = visitor.get_catalog(content_id)
@@ -79,15 +80,16 @@ def show_content(ctx, **argv):
     click.echo(tabulate(table))
 
 
-
 @main.command("save-show")
 @click.option("--id", type=click.INT, required=True)
-@click.option("--no-tag", is_flag=True, default=False, help="Do not add IDv3 tags.")
+@click.option("--no-tag", is_flag=True, default=False,
+              help="Do not add IDv3 tags.")
 @click.pass_context
 def save_show(ctx, **argv):
 
     content_id = argv.pop("id")
-    logger.debug(json.dumps(ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+    logger.debug(json.dumps(
+        ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
     ctx.obj.visitor.save_show(content_id, argv.pop("no_tag"))
 
@@ -98,7 +100,8 @@ def save_show(ctx, **argv):
 def save_transcript(ctx, **argv):
 
     content_id = argv.pop("id")
-    logger.debug(json.dumps(ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+    logger.debug(json.dumps(
+        ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
     ctx.obj.visitor.save_transcript(content_id)
 

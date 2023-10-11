@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 from urllib.request import urlretrieve, urlcleanup
 from logging import getLogger
 from functools import lru_cache
+from typing import Optional
 
 
 logger = getLogger(__name__)
@@ -12,11 +13,11 @@ class Visitor:
     def __init__(self, token: str):
         self.token = token
 
-    def get_api_response(self, uri: str, params: dict = None):
+    def get_api_response(self, uri: str, params: Optional[dict] = None):
 
         url = urljoin("https://api.vistopia.com.cn/api/v1/", uri)
 
-        if params == None:
+        if params is None:
             params = {}
 
         params.update({"api_token": self.token})
@@ -38,7 +39,7 @@ class Visitor:
     def get_user_subscriptions_list(self):
         data = []
         while True:
-            response = self.get_api_response(f"user/subscriptions-list")
+            response = self.get_api_response("user/subscriptions-list")
             data.extend(response["data"])
             break
         return data
