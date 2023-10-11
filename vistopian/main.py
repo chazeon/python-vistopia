@@ -2,9 +2,11 @@ import click
 import json
 import logging
 from logging import getLogger
-from visitor import Visitor
 from tabulate import tabulate
 from os import environ
+
+from visitor import Visitor
+from utils import range_expand
 
 
 logger = getLogger(__name__)
@@ -84,26 +86,41 @@ def show_content(ctx, **argv):
 @click.option("--id", type=click.INT, required=True)
 @click.option("--no-tag", is_flag=True, default=False,
               help="Do not add IDv3 tags.")
+@click.option("--episode-id", help="Episode ID in the form '1-3,4,8'")
 @click.pass_context
 def save_show(ctx, **argv):
 
     content_id = argv.pop("id")
+    episode_id = argv.pop("episode_id", None)
+    episodes = set(range_expand(episode_id) if episode_id else None)
+
     logger.debug(json.dumps(
         ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
-    ctx.obj.visitor.save_show(content_id, argv.pop("no_tag"))
+    ctx.obj.visitor.save_show(
+        content_id,
+        no_tag=argv.pop("no_tag"),
+        episodes=episodes,
+    )
 
 
 @main.command("save-transcript")
 @click.option("--id", type=click.INT, required=True)
+@click.option("--episode-id", help="Episode ID in the form '1-3,4,8'")
 @click.pass_context
 def save_transcript(ctx, **argv):
 
     content_id = argv.pop("id")
+    episode_id = argv.pop("episode_id", None)
+    episodes = set(range_expand(episode_id) if episode_id else None)
+
     logger.debug(json.dumps(
         ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
-    ctx.obj.visitor.save_transcript(content_id)
+    ctx.obj.visitor.save_transcript(
+        content_id,
+        episodes=episodes
+    )
 
 
 if __name__ == "__main__":

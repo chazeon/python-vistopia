@@ -49,7 +49,9 @@ class Visitor:
         response = self.get_api_response(f"content/content-show/{id}")
         return response
 
-    def save_show(self, id: int, no_tag: bool = False, no_cover: bool = False):
+    def save_show(self, id: int,
+                  no_tag: bool = False, no_cover: bool = False,
+                  episodes: Optional[set] = None):
 
         from pathlib import Path
 
@@ -61,6 +63,11 @@ class Visitor:
 
         for part in catalog["catalog"]:
             for article in part["part"]:
+
+                if episodes is not None and \
+                      int(article["sort_number"]) not in episodes:
+                    continue
+
                 fname = show_dir / "{}.mp3".format(article["title"])
                 if not fname.exists():
                     urlretrieve(article["media_key_full_url"], fname)
@@ -71,7 +78,7 @@ class Visitor:
                 if not no_cover:
                     self.retag_cover(str(fname), article, catalog, series)
 
-    def save_transcript(self, id: int):
+    def save_transcript(self, id: int, episodes: Optional[set] = None):
 
         from pathlib import Path
 
@@ -82,6 +89,11 @@ class Visitor:
 
         for part in catalog["catalog"]:
             for article in part["part"]:
+
+                if episodes is not None and \
+                      int(article["sort_number"]) not in episodes:
+                    continue
+
                 fname = show_dir / "{}.html".format(article["title"])
                 if not fname.exists():
                     urlretrieve(article["content_url"], fname)
