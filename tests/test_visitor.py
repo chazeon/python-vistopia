@@ -2,6 +2,7 @@ import pytest
 import sys
 from pathlib import Path
 import os
+import itertools
 
 TESTS_DIR = Path(__file__).parent
 sys.path.insert(0, str(TESTS_DIR.parent))
@@ -64,3 +65,24 @@ def test_save_transcript(visitor, tmpdir):
     with open(expected_file, "r", encoding="utf8") as fp:
         line = fp.readline()
         assert line.strip() == "<!DOCTYPE html>"
+
+
+@pytest.mark.parametrize("keyword, expected", [
+    ("八分", (11, "梁文道", "八分", "知识只求八分饱", "content")),
+    ("李如一", (19, "李如一", "20世纪十大唱片里程碑", "作为乐器的录音室", "content")),
+])
+def test_search(visitor: Visitor, keyword: str, expected: tuple):
+
+    data = visitor.search(keyword)
+    assert isinstance(data, list)
+    for k in ("id", "author", "title", "share_desc", "data_type"):
+        assert all([k in item.keys() for item in data])
+    assert any([
+        (
+            int(item["id"]),
+            item["author"],
+            item["title"],
+            item["share_desc"],
+            item["data_type"],
+        ) == expected for item in data
+    ])

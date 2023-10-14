@@ -17,3 +17,14 @@ def test_cli_list_show_content(
     ])
 
     assert result.exit_code == 0
+
+
+def test_cli_search(
+    cli_runner: click.testing.CliRunner
+):
+    result: click.testing.Result = cli_runner.invoke(main, [
+        "search", "-k", "八分"
+    ])
+
+    assert result.exit_code == 0
+    assert len(result.stdout_bytes) > 0

@@ -9,8 +9,6 @@ from os import environ
 from visitor import Visitor
 from utils import range_expand
 
-from visitor import Visitor
-
 logger = getLogger(__name__)
 
 
@@ -26,8 +24,8 @@ class Context:
 
 
 @click.group()
-@click.option("-t", "--token", help="API token")
-@click.option("-v", "--verbosity", default="INFO", help="Logging level")
+@click.option("-t", "--token", help="API token.")
+@click.option("-v", "--verbosity", default="INFO", help="Logging level.")
 @click.pass_context
 def main(ctx, **argv):
 
@@ -43,25 +41,26 @@ def main(ctx, **argv):
 
 
 @main.command("search")
-@click.option("--keyword", "-k", type=click.STRING, required=True)
+@click.option("--keyword", "-k", type=click.STRING, required=True,
+              help="Search keyword.")
 @click.pass_context
 def search(ctx, **argv):
     visitor: Visitor = ctx.obj.visitor
     search_result_list = visitor.search(argv.pop("keyword"))
-    logging.debug(json.dumps(search_result_list, indent=2, ensure_ascii=False))
+    logger.debug(json.dumps(search_result_list, indent=2, ensure_ascii=False))
 
     table = []
     for item in search_result_list:
-        if item['data_type'] != 'content':
+        if item["data_type"] != "content":
             continue
-        author = item['author']
-        if item['subtitle']:
-            title = ": ".join([item['title'], item['subtitle']])
+        author = item["author"]
+        if item["subtitle"]:
+            title = "%s: %s" % ([item['title'], item['subtitle']])
         else:
             title = item['title']
         desc = item['share_desc']
         content_id = item['id']
-        table.append((author, title, desc, content_id))
+        table.append((content_id, author, title, desc))
 
     click.echo(tabulate(table))
 
@@ -148,4 +147,3 @@ def save_transcript(ctx, **argv):
 
 if __name__ == "__main__":
     main()
-
