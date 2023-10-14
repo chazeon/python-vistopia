@@ -45,6 +45,13 @@ class Visitor:
         return data
 
     @lru_cache()
+    def search(self, keyword: str):
+        data = []
+        response = self.get_api_response(f"search/web", {'keyword': keyword})
+        data.extend(response["data"])
+        return data
+
+    @lru_cache()
     def get_content_show(self, id: int):
         response = self.get_api_response(f"content/content-show/{id}")
         return response
