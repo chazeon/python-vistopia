@@ -6,8 +6,8 @@ import click
 from tabulate import tabulate
 from os import environ
 
-from visitor import Visitor
-from utils import range_expand
+from .visitor import Visitor
+from .utils import range_expand
 
 logger = getLogger(__name__)
 

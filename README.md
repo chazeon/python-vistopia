@@ -1,4 +1,4 @@
-# python-vistopian
+# python-vistopia
 
 看理想命令行客户端 / 下载器
 

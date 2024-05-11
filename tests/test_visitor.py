@@ -6,7 +6,7 @@ import itertools
 
 TESTS_DIR = Path(__file__).parent
 sys.path.insert(0, str(TESTS_DIR.parent))
-from vistopian.visitor import Visitor
+from vistopia.visitor import Visitor
 
 
 @pytest.fixture

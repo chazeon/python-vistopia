@@ -1,0 +1,17 @@
+[project]
+name = "vistopia"
+authors = [{ name = "Chenxing Luo", email = "chenxing.luo@gmail.com" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+dynamic = ["version"]
+dependencies = ["requests", "mutagen", "click", "tabulate", "wcwidth"]
+requires-python = ">=3.6"
+
+[project.scripts]
+vistopian = "vistopia:main.main"
+
+[project.urls]
+Repository = "https://github.com/chazeon/python-vistopia.git"
+
+[tool.setuptools.packages.find]
+include = ["vistopia"]

@@ -5,8 +5,8 @@ import click.testing
 
 TESTS_DIR = Path(__file__).parent
 sys.path.insert(0, str(TESTS_DIR.parent))
-sys.path.insert(0, str(TESTS_DIR.parent / "vistopian"))
-from vistopian.main import main
+sys.path.insert(0, str(TESTS_DIR.parent / "vistopia"))
+from vistopia.main import main
 
 
 def test_cli_list_show_content(
