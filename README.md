@@ -19,7 +19,7 @@ pip3 install -r requirements.txt
 
 执行以下命令运行：
 ```
-python3 vistopian/main.py --token [token] [subcommand]
+python3 vistopia/main.py --token [token] [subcommand]
 ```
 
 子命令目前支持：
