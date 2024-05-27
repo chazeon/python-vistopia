@@ -144,8 +144,7 @@ class Visitor:
                     try:
                         subprocess.run(command, check=True)
                         print(
-                            f"Successfully fetched and saved \
-                                    {article['content_url']} to {fname}")
+                            f"Successfully fetched and saved to {fname}")
                     except subprocess.CalledProcessError as e:
                         print(f"Failed to fetch page using single-file: {e}")
 
