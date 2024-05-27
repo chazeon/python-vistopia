@@ -69,8 +69,8 @@ class Visitor:
         for part in catalog["catalog"]:
             for article in part["part"]:
 
-                if episodes is not None and \
-                      int(article["sort_number"]) not in episodes:
+                if episodes and \
+                        int(article["sort_number"]) not in episodes:
                     continue
 
                 fname = show_dir / "{}.mp3".format(article["title"])
@@ -95,8 +95,8 @@ class Visitor:
         for part in catalog["catalog"]:
             for article in part["part"]:
 
-                if episodes is not None and \
-                      int(article["sort_number"]) not in episodes:
+                if episodes and \
+                        int(article["sort_number"]) not in episodes:
                     continue
 
                 fname = show_dir / "{}.html".format(article["title"])

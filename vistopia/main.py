@@ -1,6 +1,7 @@
 import json
 import logging
 from logging import getLogger
+from typing import Optional
 
 import click
 from tabulate import tabulate
@@ -14,8 +15,8 @@ logger = getLogger(__name__)
 
 class Context:
     def __init__(self):
-        self.token: str = None
-        self.visitor: Visitor = None
+        self.token: Optional[str] = None
+        self.visitor: Optional[Visitor] = None
 
 
 # def _print_table(list):
@@ -115,7 +116,7 @@ def show_content(ctx, **argv):
 def save_show(ctx, **argv):
     content_id = argv.pop("id")
     episode_id = argv.pop("episode_id", None)
-    episodes = set(range_expand(episode_id) if episode_id else None)
+    episodes = set(range_expand(episode_id) if episode_id else [])
 
     logger.debug(json.dumps(
         ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
@@ -134,7 +135,7 @@ def save_show(ctx, **argv):
 def save_transcript(ctx, **argv):
     content_id = argv.pop("id")
     episode_id = argv.pop("episode_id", None)
-    episodes = set(range_expand(episode_id) if episode_id else None)
+    episodes = set(range_expand(episode_id) if episode_id else [])
 
     logger.debug(json.dumps(
         ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
