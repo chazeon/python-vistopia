@@ -118,15 +118,26 @@ class Visitor:
     def retag(fname, article_info, catalog_info, series_info):
 
         from mutagen.easyid3 import EasyID3
+        from mutagen.id3._util import ID3NoHeaderError
 
-        track = EasyID3(fname)
-        track["title"] = article_info["title"]
-        track["album"] = series_info["title"]
-        track["artist"] = series_info["author"]
-        track["tracknumber"] = article_info["sort_number"]
-        # track["tracksort"] = article_info["sort_number"]
-        track["website"] = article_info["content_url"]
-        track.save()
+        try:
+            track = EasyID3(fname)
+        except ID3NoHeaderError:
+            # No ID3 tag found, creating a new ID3 tag
+            track = EasyID3()
+            track.save(fname)
+            track = EasyID3(fname)
+
+        track['title'] = article_info['title']
+        track['album'] = series_info['title']
+        track['artist'] = series_info['author']
+        track['tracknumber'] = str(article_info['sort_number'])
+        track['website'] = article_info['content_url']
+
+        try:
+            track.save(fname)
+        except Exception as e:
+            print(f"Error saving ID3 tags: {e}")
 
     @staticmethod
     def retag_cover(fname, article_info, catalog_info, series_info):
