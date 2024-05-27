@@ -10,7 +10,7 @@
 ### 安装
 
 ```
-pip3 install -r requirements.txt
+pip3 install .
 ```
 
 ### 运行
@@ -19,7 +19,7 @@ pip3 install -r requirements.txt
 
 执行以下命令运行：
 ```
-python3 vistopia/main.py --token [token] [subcommand]
+python3 -m vistopia.main --token [token] [subcommand]
 ```
 
 子命令目前支持：
@@ -28,6 +28,19 @@ python3 vistopia/main.py --token [token] [subcommand]
 - `show-content`: 节目章节信息
 - `save-show`: 保存节目至本地，并添加封面和 ID3 信息
 - `save-transcript`: 保存节目文稿至本地
+
+### 使用 SingleFile 将文稿网页保存为纯本地文件
+
+1. 下载 [SingleFile CLI](https://github.com/gildas-lormeau/single-file-cli/releases) 命令行程序
+2. 浏览器登陆网页版看理想，使用 cookie 导出工具（如：EditThisCookie）导出 json 格式的 cookies，并保存为本地文件
+3. 运行 `save-transcript` 命令，并传入 `--single-file-exec-path` 和 `--cookie-file-path` 参数
+
+命令格式：
+```
+python3 -m vistopia.main --token [token] save-transcript --id [id] \
+--single-file-exec-path=/path/to/local/single-file \
+--cookie-file-path=/path/to/vistopia.cookie
+```
 
 ## 不足
 
