@@ -152,15 +152,13 @@ class Visitor:
     def retag(fname, article_info, catalog_info, series_info):
 
         from mutagen.easyid3 import EasyID3
-        from mutagen.id3._util import ID3NoHeaderError
+        from mutagen.id3 import ID3NoHeaderError
 
         try:
             track = EasyID3(fname)
         except ID3NoHeaderError:
             # No ID3 tag found, creating a new ID3 tag
             track = EasyID3()
-            track.save(fname)
-            track = EasyID3(fname)
 
         track['title'] = article_info['title']
         track['album'] = series_info['title']
