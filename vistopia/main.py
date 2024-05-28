@@ -134,7 +134,9 @@ def save_show(ctx, **argv):
 @click.option("--single-file-exec-path", type=click.Path(),
               help="Path to the single-file CLI tool")
 @click.option("--cookie-file-path", type=click.Path(),
-              help="Path to the browser cookie file")
+              help=(
+                  "Path to the browser cookie file "
+                  "(only needed in single-file mode)"))
 @click.pass_context
 def save_transcript(ctx, **argv):
     content_id = argv.pop("id")
