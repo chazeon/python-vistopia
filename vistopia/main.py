@@ -9,6 +9,7 @@ from os import environ
 
 from .visitor import Visitor
 from .utils import range_expand
+from .__version__ import __version__
 
 logger = getLogger(__name__)
 
@@ -27,6 +28,7 @@ class Context:
 @click.group()
 @click.option("-t", "--token", help="API token.")
 @click.option("-v", "--verbosity", default="INFO", help="Logging level.")
+@click.version_option(__version__)
 @click.pass_context
 def main(ctx: click.Context, **argv):
 

@@ -15,3 +15,6 @@ Repository = "https://github.com/chazeon/python-vistopia.git"
 
 [tool.setuptools.packages.find]
 include = ["vistopia"]
+
+[tool.setuptools.dynamic]
+version = {attr = "vistopia.__version__"}
