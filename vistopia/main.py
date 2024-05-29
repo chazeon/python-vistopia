@@ -1,6 +1,7 @@
 import json
 import logging
 from logging import getLogger
+from typing import Optional
 
 import click
 from tabulate import tabulate
@@ -14,8 +15,8 @@ logger = getLogger(__name__)
 
 class Context:
     def __init__(self):
-        self.token: str = None
-        self.visitor: Visitor = None
+        self.token: Optional[str] = None
+        self.visitor: Optional[Visitor] = None
 
 
 # def _print_table(list):
@@ -115,7 +116,7 @@ def show_content(ctx, **argv):
 def save_show(ctx, **argv):
     content_id = argv.pop("id")
     episode_id = argv.pop("episode_id", None)
-    episodes = set(range_expand(episode_id) if episode_id else None)
+    episodes = set(range_expand(episode_id) if episode_id else [])
 
     logger.debug(json.dumps(
         ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
@@ -130,19 +131,35 @@ def save_show(ctx, **argv):
 @main.command("save-transcript")
 @click.option("--id", type=click.INT, required=True)
 @click.option("--episode-id", help="Episode ID in the form '1-3,4,8'")
+@click.option("--single-file-exec-path", type=click.Path(),
+              help="Path to the single-file CLI tool")
+@click.option("--cookie-file-path", type=click.Path(),
+              help=(
+                  "Path to the browser cookie file "
+                  "(only needed in single-file mode)"))
 @click.pass_context
 def save_transcript(ctx, **argv):
     content_id = argv.pop("id")
     episode_id = argv.pop("episode_id", None)
-    episodes = set(range_expand(episode_id) if episode_id else None)
+    single_file_exec_path = argv.pop("single_file_exec_path")
+    cookie_file_path = argv.pop("cookie_file_path")
+    episodes = set(range_expand(episode_id) if episode_id else [])
 
     logger.debug(json.dumps(
         ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
 
-    ctx.obj.visitor.save_transcript(
-        content_id,
-        episodes=episodes
-    )
+    if single_file_exec_path and cookie_file_path:
+        ctx.obj.visitor.save_transcript_with_single_file(
+            content_id,
+            episodes=episodes,
+            single_file_exec_path=single_file_exec_path,
+            cookie_file_path=cookie_file_path
+        )
+    else:
+        ctx.obj.visitor.save_transcript(
+            content_id,
+            episodes=episodes
+        )
 
 
 if __name__ == "__main__":

@@ -69,8 +69,8 @@ class Visitor:
         for part in catalog["catalog"]:
             for article in part["part"]:
 
-                if episodes is not None and \
-                      int(article["sort_number"]) not in episodes:
+                if episodes and \
+                        int(article["sort_number"]) not in episodes:
                     continue
 
                 fname = show_dir / "{}.mp3".format(article["title"])
@@ -95,8 +95,8 @@ class Visitor:
         for part in catalog["catalog"]:
             for article in part["part"]:
 
-                if episodes is not None and \
-                      int(article["sort_number"]) not in episodes:
+                if episodes and \
+                        int(article["sort_number"]) not in episodes:
                     continue
 
                 fname = show_dir / "{}.html".format(article["title"])
@@ -114,19 +114,62 @@ class Visitor:
                     with open(fname, "w") as f:
                         f.write(content)
 
+    def save_transcript_with_single_file(self, id: int,
+                                         episodes: Optional[set] = None,
+                                         single_file_exec_path: str = "",
+                                         cookie_file_path: str = ""):
+        import subprocess
+        from pathlib import Path
+        logger.debug(f"save_transcript_with_single_file id {id}")
+
+        catalog = self.get_catalog(id)
+        show_dir = Path(catalog["title"])
+        show_dir.mkdir(exist_ok=True)
+
+        for part in catalog["catalog"]:
+            for article in part["part"]:
+                if episodes and int(article["sort_number"]) not in episodes:
+                    continue
+
+                fname = show_dir / "{}.html".format(article["title"])
+                if not fname.exists():
+                    command = [
+                        single_file_exec_path,
+                        "https://www.vistopia.com.cn/article/"
+                        + article["article_id"],
+                        str(fname),
+                        "--browser-cookies-file=" + cookie_file_path
+                    ]
+                    logger.debug(f"singlefile command {command}")
+                    try:
+                        subprocess.run(command, check=True)
+                        print(
+                            f"Successfully fetched and saved to {fname}")
+                    except subprocess.CalledProcessError as e:
+                        print(f"Failed to fetch page using single-file: {e}")
+
     @staticmethod
     def retag(fname, article_info, catalog_info, series_info):
 
         from mutagen.easyid3 import EasyID3
+        from mutagen.id3 import ID3NoHeaderError
 
-        track = EasyID3(fname)
-        track["title"] = article_info["title"]
-        track["album"] = series_info["title"]
-        track["artist"] = series_info["author"]
-        track["tracknumber"] = article_info["sort_number"]
-        # track["tracksort"] = article_info["sort_number"]
-        track["website"] = article_info["content_url"]
-        track.save()
+        try:
+            track = EasyID3(fname)
+        except ID3NoHeaderError:
+            # No ID3 tag found, creating a new ID3 tag
+            track = EasyID3()
+
+        track['title'] = article_info['title']
+        track['album'] = series_info['title']
+        track['artist'] = series_info['author']
+        track['tracknumber'] = str(article_info['sort_number'])
+        track['website'] = article_info['content_url']
+
+        try:
+            track.save(fname)
+        except Exception as e:
+            print(f"Error saving ID3 tags: {e}")
 
     @staticmethod
     def retag_cover(fname, article_info, catalog_info, series_info):
