@@ -10,7 +10,7 @@ logger = getLogger(__name__)
 
 
 class Visitor:
-    def __init__(self, token: str):
+    def __init__(self, token: Optional[str]):
         self.token = token
 
     def get_api_response(self, uri: str, params: Optional[dict] = None):

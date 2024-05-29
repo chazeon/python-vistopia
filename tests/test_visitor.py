@@ -2,7 +2,6 @@ import pytest
 import sys
 from pathlib import Path
 import os
-import itertools
 
 TESTS_DIR = Path(__file__).parent
 sys.path.insert(0, str(TESTS_DIR.parent))
@@ -28,6 +27,7 @@ def test_get_content_show(visitor):
     assert content_show.get("author") == "梁文道"
     assert content_show.get("title") == "八分"
 
+
 def test_save_show(visitor, tmpdir):
 
     cwd = os.getcwd()
@@ -43,7 +43,6 @@ def test_save_show(visitor, tmpdir):
 
     assert expected_file.exists()
     assert os.path.getsize(expected_file) > 0
-
 
 
 def test_save_transcript(visitor, tmpdir):

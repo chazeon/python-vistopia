@@ -1,4 +1,3 @@
-import pytest
 import sys
 from pathlib import Path
 import click.testing
@@ -13,7 +12,7 @@ def test_cli_list_show_content(
     cli_runner: click.testing.CliRunner
 ):
     result: click.testing.Result = cli_runner.invoke(main, [
-        "show-content", "--id", 18
+        "show-content", "--id", "18"
     ])
 
     assert result.exit_code == 0
