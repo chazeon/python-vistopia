@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import shutil
 import mutagen
+import pytest
 
 TESTS_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(TESTS_DIR.parent))
@@ -18,12 +19,20 @@ CURR_TEST_DIR = Path(__file__).parent
 
 def test_id3_tagging_with_missing_id3(tmpdir):
 
+
     test_mp3 = tmpdir / "id3_removed.mp3"
 
     shutil.copyfile(
         CURR_TEST_DIR / "data" / "id3_removed.mp3",
         test_mp3
     )
+
+
+    from mutagen.id3 import ID3NoHeaderError
+    from mutagen.easyid3 import EasyID3
+
+    with pytest.raises(ID3NoHeaderError):
+        mutagen.easyid3.EasyID3(test_mp3)
 
     Visitor.retag(
         test_mp3,
@@ -39,7 +48,6 @@ def test_id3_tagging_with_missing_id3(tmpdir):
         catalog_info={}
     )
 
-    from mutagen.easyid3 import EasyID3
     tag = EasyID3(test_mp3)
 
     assert tag["title"] == ["测试标题"]
