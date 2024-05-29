@@ -149,7 +149,12 @@ class Visitor:
                         print(f"Failed to fetch page using single-file: {e}")
 
     @staticmethod
-    def retag(fname, article_info: dict, catalog_info: dict, series_info: dict):
+    def retag(
+        fname: str,
+        article_info: dict,
+        catalog_info: dict,
+        series_info: dict
+    ):
 
         from mutagen.easyid3 import EasyID3
         from mutagen.id3 import ID3NoHeaderError
