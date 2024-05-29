@@ -28,7 +28,7 @@ class Context:
 @click.option("-t", "--token", help="API token.")
 @click.option("-v", "--verbosity", default="INFO", help="Logging level.")
 @click.pass_context
-def main(ctx, **argv):
+def main(ctx: click.Context, **argv):
 
     verbosity = argv.pop("verbosity").upper()
     logging.basicConfig(format='%(asctime)s %(message)s', level=verbosity)
@@ -45,7 +45,7 @@ def main(ctx, **argv):
 @click.option("--keyword", "-k", type=click.STRING, required=True,
               help="Search keyword.")
 @click.pass_context
-def search(ctx, **argv):
+def search(ctx: click.Context, **argv):
     visitor: Visitor = ctx.obj.visitor
     search_result_list = visitor.search(argv.pop("keyword"))
     logger.debug(json.dumps(search_result_list, indent=2, ensure_ascii=False))
@@ -68,7 +68,7 @@ def search(ctx, **argv):
 
 @main.command("subscriptions")
 @click.pass_context
-def subscriptions(ctx):
+def subscriptions(ctx: click.Context):
     visitor: Visitor = ctx.obj.visitor
 
     logger.debug(visitor.get_user_subscriptions_list())
@@ -85,7 +85,7 @@ def subscriptions(ctx):
 @main.command("show-content")
 @click.option("--id", type=click.INT, required=True)
 @click.pass_context
-def show_content(ctx, **argv):
+def show_content(ctx: click.Context, **argv):
     visitor: Visitor = ctx.obj.visitor
 
     content_id = argv.pop("id")
@@ -113,7 +113,7 @@ def show_content(ctx, **argv):
               help="Do not add IDv3 tags.")
 @click.option("--episode-id", help="Episode ID in the form '1-3,4,8'")
 @click.pass_context
-def save_show(ctx, **argv):
+def save_show(ctx: click.Context, **argv):
     content_id = argv.pop("id")
     episode_id = argv.pop("episode_id", None)
     episodes = set(range_expand(episode_id) if episode_id else [])
@@ -138,7 +138,7 @@ def save_show(ctx, **argv):
                   "Path to the browser cookie file "
                   "(only needed in single-file mode)"))
 @click.pass_context
-def save_transcript(ctx, **argv):
+def save_transcript(ctx: click.Context, **argv):
     content_id = argv.pop("id")
     episode_id = argv.pop("episode_id", None)
     single_file_exec_path = argv.pop("single_file_exec_path")
