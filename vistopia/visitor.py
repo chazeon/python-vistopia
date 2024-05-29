@@ -149,7 +149,7 @@ class Visitor:
                         print(f"Failed to fetch page using single-file: {e}")
 
     @staticmethod
-    def retag(fname, article_info, catalog_info, series_info):
+    def retag(fname, article_info: dict, catalog_info: dict, series_info: dict):
 
         from mutagen.easyid3 import EasyID3
         from mutagen.id3 import ID3NoHeaderError
@@ -158,6 +158,7 @@ class Visitor:
             track = EasyID3(fname)
         except ID3NoHeaderError:
             # No ID3 tag found, creating a new ID3 tag
+            # See: https://github.com/quodlibet/mutagen/issues/327
             track = EasyID3()
 
         track['title'] = article_info['title']
