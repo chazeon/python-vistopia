@@ -27,3 +27,14 @@ def test_cli_search(
 
     assert result.exit_code == 0
     assert len(result.stdout_bytes) > 0
+
+
+def test_cli_version(
+    cli_runner: click.testing.CliRunner
+):
+    result: click.testing.Result = cli_runner.invoke(main, [
+        "--version"
+    ])
+
+    assert result.exit_code == 0
+    assert len(result.stdout.strip().split(".")) == 3
