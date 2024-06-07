@@ -43,7 +43,7 @@ def main(ctx: click.Context, **argv):
     ctx.obj.visitor = Visitor(token=token)
 
 
-@main.command("search")
+@main.command("search", help="搜索节目")
 @click.option("--keyword", "-k", type=click.STRING, required=True,
               help="Search keyword.")
 @click.pass_context
@@ -68,7 +68,7 @@ def search(ctx: click.Context, **argv):
     click.echo(tabulate(table))
 
 
-@main.command("subscriptions")
+@main.command("subscriptions", help="列出所有已订阅节目")
 @click.pass_context
 def subscriptions(ctx: click.Context):
     visitor: Visitor = ctx.obj.visitor
@@ -84,7 +84,7 @@ def subscriptions(ctx: click.Context):
     click.echo(tabulate(table))
 
 
-@main.command("show-content")
+@main.command("show-content", help="节目章节信息")
 @click.option("--id", type=click.INT, required=True)
 @click.pass_context
 def show_content(ctx: click.Context, **argv):
@@ -109,7 +109,7 @@ def show_content(ctx: click.Context, **argv):
     click.echo(tabulate(table))
 
 
-@main.command("save-show")
+@main.command("save-show", help="保存节目至本地，并添加封面和 ID3 信息")
 @click.option("--id", type=click.INT, required=True)
 @click.option("--no-tag", is_flag=True, default=False,
               help="Do not add IDv3 tags.")
@@ -130,7 +130,7 @@ def save_show(ctx: click.Context, **argv):
     )
 
 
-@main.command("save-transcript")
+@main.command("save-transcript", help="保存节目文稿至本地")
 @click.option("--id", type=click.INT, required=True)
 @click.option("--episode-id", help="Episode ID in the form '1-3,4,8'")
 @click.option("--single-file-exec-path", type=click.Path(),
