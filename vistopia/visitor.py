@@ -1,4 +1,5 @@
 import requests
+import os
 from urllib.parse import urljoin
 from urllib.request import urlretrieve, urlcleanup
 from logging import getLogger
@@ -75,26 +76,57 @@ class Visitor:
                         int(article["sort_number"]) not in episodes:
                     continue
 
-                fname = show_dir / "{}.mp3".format(
-                    sanitize_filename(article["title"])
-                )
-                if not fname.exists():
-                    urlretrieve(article["media_key_full_url"], fname)
-
-                if not no_tag:
-                    self.retag(str(fname), article, catalog, series)
-
-                if not no_cover:
-                    self.retag_cover(str(fname), article, catalog, series)
                 tracknumber = self.generate_tracknumber(
                     idx,
                     catalog["catalog"])
                 idx += 1
 
+                media_url = article.get("media_key_full_url")
+                if not media_url:
+                    media_files = article.get("media_files")
+                    if media_files and "media_key_full_url" in media_files[0]:
+                        media_url = media_files[0]["media_key_full_url"]
+                    else:
+                        raise ValueError(f"Media URL not found for article: \
+                                {article['title']}")
+
+                logger.debug(f"media_url {media_url}")
+                is_video = media_url.endswith('.m3u8') or \
+                    media_url.endswith('.mp4')
+                extension = '.mp4' if is_video else '.mp3'
+                filename = sanitize_filename(article["title"]) + extension
+                fname = show_dir / filename
+
                 if prefix_index:
                     filename_with_index = "{}_{}".format(tracknumber, filename)
                     fname = show_dir / filename_with_index
                 logger.debug(f"fname {fname}")
+
+                if is_video:
+                    if not fname.exists():
+                        command = [
+                            'ffmpeg',
+                            '-i', media_url,
+                            '-c', 'copy',
+                            str(fname)
+                        ]
+                        try:
+                            with open(os.devnull, 'w') as devnull:
+                                subprocess.run(command, stdout=devnull,
+                                               stderr=devnull, check=True)
+                            print(f"Video saved successfully to {fname}")
+                        except Exception as e:
+                            print(f"Failed to process with ffmpeg: {str(e)}")
+
+                else:
+                    if not fname.exists():
+                        urlretrieve(media_url, fname)
+                        if not no_tag:
+                            self.retag(str(fname), article,
+                                       catalog, series, tracknumber)
+                        if not no_cover:
+                            self.retag_cover(str(fname), article,
+                                             catalog, series)
 
     def save_transcript(self, id: int, episodes: Optional[set] = None):
 
