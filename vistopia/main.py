@@ -106,6 +106,9 @@ def show_content(ctx: click.Context, **argv):
                 article["duration_str"],
             ))
 
+    click.echo(f"Title: {catalog['title']}")
+    click.echo(f"Author: {catalog['author']}")
+    click.echo(f"Type: {catalog['type']}")
     click.echo(tabulate(table))
 
 
