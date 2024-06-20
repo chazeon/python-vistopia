@@ -29,11 +29,24 @@ class Visitor:
 
         logger.debug(f"Visiting {url}")
 
-        response = requests.get(url, params=params).json()
-        assert response["status"] == "success"
-        assert "data" in response.keys()
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()
+            data = response.json()
 
-        return response["data"]
+            if data.get("status") != "success" or "data" not in data:
+                logger.error(f"Resource may not exist: {url}")
+                return None
+
+            return data["data"]
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request failed: {e}")
+            return None
+
+        except ValueError as e:
+            logger.error(f"Failed to decode JSON response: {e}")
+            return None
 
     @lru_cache()
     def get_catalog(self, id: int):
@@ -45,14 +58,18 @@ class Visitor:
         data = []
         while True:
             response = self.get_api_response("user/subscriptions-list")
-            data.extend(response["data"])
-            break
+            if response and 'data' in response:
+                data.extend(response["data"])
+                break
         return data
 
     @lru_cache()
     def search(self, keyword: str) -> list:
+        data = []
         response = self.get_api_response("search/web", {'keyword': keyword})
-        return response["data"]
+        if response and 'data' in response:
+            data.extend(response["data"])
+        return data
 
     @lru_cache()
     def get_content_show(self, id: int):
@@ -66,7 +83,14 @@ class Visitor:
         from pathlib import Path
 
         catalog = self.get_catalog(id)
+        if catalog is None:
+            logger.error(f"Failed to retrieve catalog for id {id}")
+            return
+
         series = self.get_content_show(id)
+        if series is None:
+            logger.error(f"Failed to retrieve series information for id {id}")
+            return
 
         show_dir = Path(catalog["title"])
         show_dir.mkdir(exist_ok=True)
@@ -136,6 +160,9 @@ class Visitor:
         from pathlib import Path
 
         catalog = self.get_catalog(id)
+        if catalog is None:
+            logger.error(f"Failed to retrieve catalog for id {id}")
+            return
 
         show_dir = Path(catalog["title"])
         show_dir.mkdir(exist_ok=True)
@@ -231,6 +258,10 @@ class Visitor:
         logger.debug(f"save_transcript_with_single_file id {id}")
 
         catalog = self.get_catalog(id)
+        if catalog is None:
+            logger.error(f"Failed to retrieve catalog for id {id}")
+            return
+
         show_dir = Path(catalog["title"])
         show_dir.mkdir(exist_ok=True)
 
