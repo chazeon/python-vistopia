@@ -1,4 +1,7 @@
+import concurrent.futures
 import requests
+import subprocess
+import time
 import os
 from urllib.parse import urljoin
 from urllib.request import urlretrieve, urlcleanup
@@ -161,41 +164,93 @@ class Visitor:
                     with open(fname, "w") as f:
                         f.write(content)
 
+    def download_with_single_file(self, article,
+                                  catalog,
+                                  show_dir,
+                                  single_file_exec_path,
+                                  cookie_file_path,
+                                  prefix_index,
+                                  episodes,
+                                  idx):
+        if episodes and int(article["sort_number"]) not in episodes:
+            return
+
+        tracknumber = self.generate_tracknumber(
+            idx,
+            catalog["catalog"])
+
+        fname = show_dir / "{}.html".format(
+            sanitize_filename(article["title"])
+        )
+        if prefix_index:
+            fname = show_dir / "{}_{}.html".format(
+                tracknumber,
+                sanitize_filename(article["title"])
+            )
+        if not fname.exists():
+            command = [
+                single_file_exec_path,
+                "https://www.vistopia.com.cn/article/"
+                + article["article_id"],
+                str(fname),
+                "--browser-cookies-file=" + cookie_file_path
+            ]
+
+            attempts = 0
+            max_retries = 3
+            timeout_seconds = 60
+            retry_delay_seconds = 10
+
+            while attempts < max_retries:
+                try:
+                    subprocess.run(command, check=True,
+                                   timeout=timeout_seconds)
+                    print(f"Successfully fetched and saved to {fname}")
+                    break
+                except subprocess.TimeoutExpired:
+                    attempts += 1
+                    print(
+                        f"Timeout expired for {article['title']}. \
+                        Retrying {attempts}/{max_retries}...")
+                    time.sleep(retry_delay_seconds)
+                except subprocess.CalledProcessError as e:
+                    print(f"Failed to fetch page using single-file: {e}")
+                    break
+
+            if attempts == max_retries:
+                print(
+                    "Reached maximum retry attempts. \
+                    Please check the network or the URL.")
+
     def save_transcript_with_single_file(self, id: int,
                                          episodes: Optional[set] = None,
                                          single_file_exec_path: str = "",
                                          cookie_file_path: str = ""):
-        import subprocess
         from pathlib import Path
+
         logger.debug(f"save_transcript_with_single_file id {id}")
 
         catalog = self.get_catalog(id)
         show_dir = Path(catalog["title"])
         show_dir.mkdir(exist_ok=True)
 
-        for part in catalog["catalog"]:
-            for article in part["part"]:
-                if episodes and int(article["sort_number"]) not in episodes:
-                    continue
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            futures = []
+            idx = 1
+            for part in catalog["catalog"]:
+                for article in part["part"]:
+                    futures.append(executor.submit(
+                        self.download_with_single_file,
+                        article, catalog, show_dir, single_file_exec_path,
+                        cookie_file_path, prefix_index, episodes, idx
+                    ))
+                    idx += 1
 
-                fname = show_dir / "{}.html".format(
-                    sanitize_filename(article["title"])
-                )
-                if not fname.exists():
-                    command = [
-                        single_file_exec_path,
-                        "https://www.vistopia.com.cn/article/"
-                        + article["article_id"],
-                        str(fname),
-                        "--browser-cookies-file=" + cookie_file_path
-                    ]
-                    logger.debug(f"singlefile command {command}")
-                    try:
-                        subprocess.run(command, check=True)
-                        print(
-                            f"Successfully fetched and saved to {fname}")
-                    except subprocess.CalledProcessError as e:
-                        print(f"Failed to fetch page using single-file: {e}")
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()
+                except Exception as exc:
+                    print(f"Generated an exception: {exc}")
 
     @staticmethod
     def retag(
