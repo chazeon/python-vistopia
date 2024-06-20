@@ -67,6 +67,7 @@ class Visitor:
         show_dir = Path(catalog["title"])
         show_dir.mkdir(exist_ok=True)
 
+        idx = 1
         for part in catalog["catalog"]:
             for article in part["part"]:
 
@@ -85,6 +86,15 @@ class Visitor:
 
                 if not no_cover:
                     self.retag_cover(str(fname), article, catalog, series)
+                tracknumber = self.generate_tracknumber(
+                    idx,
+                    catalog["catalog"])
+                idx += 1
+
+                if prefix_index:
+                    filename_with_index = "{}_{}".format(tracknumber, filename)
+                    fname = show_dir / filename_with_index
+                logger.debug(f"fname {fname}")
 
     def save_transcript(self, id: int, episodes: Optional[set] = None):
 
@@ -160,7 +170,8 @@ class Visitor:
         fname: str,
         article_info: dict,
         catalog_info: dict,
-        series_info: dict
+        series_info: dict,
+        tracknumber: str,
     ):
 
         from mutagen.easyid3 import EasyID3
@@ -176,7 +187,7 @@ class Visitor:
         track['title'] = article_info['title']
         track['album'] = series_info['title']
         track['artist'] = series_info['author']
-        track['tracknumber'] = str(article_info['sort_number'])
+        track['tracknumber'] = tracknumber
         track['website'] = article_info['content_url']
 
         try:
@@ -203,3 +214,15 @@ class Visitor:
         track["APIC"] = APIC(encoding=3, mime="image/jpeg",
                              type=3, desc="Cover", data=cover)
         track.save()
+
+    @staticmethod
+    def generate_tracknumber(idx: int, catalog: dict) -> str:
+        # Calculate the total number of episodes in the show
+        total_files = sum(len(part['part']) for part in catalog)
+        # Determine the minimum length needed
+        # for the identifier based on total files
+        min_length = len(str(total_files))
+        # Generate a formatted identifier, ensuring it has at least min_length
+        # digits, padding with zeros if necessary
+        formatted_id = f"{idx:0{min_length}d}"
+        return formatted_id
