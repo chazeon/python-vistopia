@@ -28,6 +28,7 @@ python3 -m vistopia.main --token [token] [subcommand]
 - `show-content`: 节目章节信息
 - `save-show`: 保存节目至本地，并添加封面和 ID3 信息
 - `save-transcript`: 保存节目文稿至本地
+- `batch-save`: 批量保存专辑节目及文稿
 
 ### 使用 SingleFile 将文稿网页保存为纯本地文件
 

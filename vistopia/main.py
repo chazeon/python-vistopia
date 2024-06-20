@@ -112,6 +112,57 @@ def show_content(ctx: click.Context, **argv):
     click.echo(tabulate(table))
 
 
+@main.command("batch-save", help="批量下载专辑节目及文稿")
+@click.option("--id", required=True, help="Show ID in the form '1-3,4,8'")
+@click.option("--single-file-exec-path", type=click.Path(),
+              help="Path to the single-file CLI tool")
+@click.option("--cookie-file-path", type=click.Path(),
+              help=(
+                  "Path to the browser cookie file "
+                  "(only needed in single-file mode)"))
+@click.pass_context
+def batch_save(ctx: click.Context, **argv):
+    visitor: Visitor = ctx.obj.visitor
+
+    album_id = argv.pop("id")
+    single_file_exec_path = argv.pop("single_file_exec_path")
+    cookie_file_path = argv.pop("cookie_file_path")
+
+    albums = set(range_expand(album_id) if album_id else [])
+    logger.debug(f"albums: {albums}")
+
+    for content_id in albums:
+        logger.debug(f"album: {content_id}")
+        logger.debug(visitor.get_content_show(content_id))
+        logger.debug(json.dumps(
+            visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+
+        catalog = visitor.get_catalog(content_id)
+        if catalog is None or catalog["type"] == "free":
+            continue
+        print(f"Saving show: [{content_id}]-{catalog['title']}")
+
+        ctx.obj.visitor.save_show(
+            content_id,
+            no_tag=False,
+            episodes=None
+        )
+
+        if single_file_exec_path and cookie_file_path:
+            ctx.obj.visitor.save_transcript_with_single_file(
+                content_id,
+                episodes=None,
+                single_file_exec_path=single_file_exec_path,
+                cookie_file_path=cookie_file_path
+            )
+        else:
+            ctx.obj.visitor.save_transcript(
+                content_id,
+                episodes=None
+            )
+    return
+
+
 @main.command("save-show", help="保存节目至本地，并添加封面和 ID3 信息")
 @click.option("--id", type=click.INT, required=True)
 @click.option("--no-tag", is_flag=True, default=False,
