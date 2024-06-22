@@ -4,7 +4,7 @@ authors = [{ name = "Chenxing Luo", email = "chenxing.luo@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
 dynamic = ["version"]
-dependencies = ["requests", "mutagen", "click", "tabulate", "wcwidth"]
+dependencies = ["requests", "mutagen", "click", "tabulate", "wcwidth", "pathvalidate"]
 requires-python = ">=3.6"
 
 [project.scripts]
