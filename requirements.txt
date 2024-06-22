@@ -3,3 +3,4 @@ mutagen
 click
 tabulate
 wcwidth
+pathvalidate
