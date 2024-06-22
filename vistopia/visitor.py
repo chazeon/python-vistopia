@@ -130,6 +130,12 @@ class Visitor:
         return media_url
 
     def process_video(self, media_url, fname):
+        from shutil import which
+
+        if which('ffmpeg') is None:
+            print(f"Please install ffmpeg to fetch video: {fname}")
+            return
+
         if not fname.exists():
             command = ['ffmpeg', '-i', media_url, '-c', 'copy', str(fname)]
             try:

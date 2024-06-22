@@ -26,7 +26,7 @@ python3 -m vistopia.main --token [token] [subcommand]
 - `search`: 搜索节目
 - `subscriptions`: 列出所有已订阅节目
 - `show-content`: 节目章节信息
-- `save-show`: 保存节目至本地，并添加封面和 ID3 信息
+- `save-show`: 保存节目至本地，并添加封面和 ID3 信息（安装 ffmpeg 后可保存视频节目）
 - `save-transcript`: 保存节目文稿至本地
 - `batch-save`: 批量保存专辑节目及文稿
 
