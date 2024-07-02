@@ -4,6 +4,7 @@ from urllib.request import urlretrieve, urlcleanup
 from logging import getLogger
 from functools import lru_cache
 from typing import Optional
+from pathvalidate import sanitize_filename
 
 
 logger = getLogger(__name__)
@@ -73,7 +74,9 @@ class Visitor:
                         int(article["sort_number"]) not in episodes:
                     continue
 
-                fname = show_dir / "{}.mp3".format(article["title"])
+                fname = show_dir / "{}.mp3".format(
+                    sanitize_filename(article["title"])
+                )
                 if not fname.exists():
                     urlretrieve(article["media_key_full_url"], fname)
 
@@ -99,7 +102,9 @@ class Visitor:
                         int(article["sort_number"]) not in episodes:
                     continue
 
-                fname = show_dir / "{}.html".format(article["title"])
+                fname = show_dir / "{}.html".format(
+                    sanitize_filename(article["title"])
+                )
                 if not fname.exists():
                     urlretrieve(article["content_url"], fname)
 
@@ -131,7 +136,9 @@ class Visitor:
                 if episodes and int(article["sort_number"]) not in episodes:
                     continue
 
-                fname = show_dir / "{}.html".format(article["title"])
+                fname = show_dir / "{}.html".format(
+                    sanitize_filename(article["title"])
+                )
                 if not fname.exists():
                     command = [
                         single_file_exec_path,
