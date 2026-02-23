@@ -1,20 +1,33 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "vistopia"
-authors = [{ name = "Chenxing Luo", email = "chenxing.luo@gmail.com" }]
+authors = [
+    { name = "Chenxing Luo", email = "chenxing.luo@gmail.com" },
+]
 readme = "README.md"
 license = { file = "LICENSE" }
 dynamic = ["version"]
-dependencies = ["requests", "mutagen", "click", "tabulate", "wcwidth", "pathvalidate"]
+dependencies = [
+    "click",
+    "mutagen",
+    "pathvalidate",
+    "requests",
+    "tabulate",
+    "wcwidth",
+]
 requires-python = ">=3.6"
 
 [project.optional-dependencies]
 dev = [
     "autopep8",
+    "flake8",
+    "mypy",
     "pytest",
     "pytest-cov",
     "pytest_click",
-    "flake8",
-    "mypy",
     "types-requests",
     "types-tabulate",
 ]
@@ -29,7 +42,7 @@ Repository = "https://github.com/chazeon/python-vistopia.git"
 include = ["vistopia"]
 
 [tool.setuptools.dynamic]
-version = {attr = "vistopia.__version__"}
+version = { attr = "vistopia.__version__" }
 
 [tool.pytest.ini_options]
 addopts = "--cov vistopia --doctest-modules --cov-report=xml --cov-report=term"
