@@ -3,15 +3,18 @@ from urllib.parse import urljoin
 from urllib.request import urlretrieve, urlcleanup
 from logging import getLogger
 from functools import lru_cache
-from typing import Optional
+from typing import List, Optional
 from pathvalidate import sanitize_filename
 
 from .models import (
+    Article,
     Catalog,
     ContentShow,
+    RetagArticle,
+    RetagSeries,
     SearchResult,
     SubscriptionsList,
-    dump_model,
+    SubscriptionItem,
     validate_model,
 )
 
@@ -42,15 +45,15 @@ class Visitor:
     @lru_cache()
     def get_catalog(self, id: int):
         response = self.get_api_response(f"content/catalog/{id}")
-        return dump_model(validate_model(Catalog, response))
+        return validate_model(Catalog, response)
 
     @lru_cache()
     def get_user_subscriptions_list(self):
-        data = []
+        data: List[SubscriptionItem] = []
         while True:
             response = self.get_api_response("user/subscriptions-list")
             subscriptions = validate_model(SubscriptionsList, response)
-            data.extend([dump_model(item) for item in subscriptions.data.data])
+            data.extend(subscriptions.data)
             break
         return data
 
@@ -58,12 +61,12 @@ class Visitor:
     def search(self, keyword: str) -> list:
         response = self.get_api_response("search/web", {'keyword': keyword})
         result = validate_model(SearchResult, response)
-        return [dump_model(item) for item in result.data.data]
+        return result.data
 
     @lru_cache()
     def get_content_show(self, id: int):
         response = self.get_api_response(f"content/content-show/{id}")
-        return dump_model(validate_model(ContentShow, response))
+        return validate_model(ContentShow, response)
 
     def save_show(self, id: int,
                   no_tag: bool = False, no_cover: bool = False,
@@ -74,21 +77,21 @@ class Visitor:
         catalog = self.get_catalog(id)
         series = self.get_content_show(id)
 
-        show_dir = Path(catalog["title"])
+        show_dir = Path(catalog.title)
         show_dir.mkdir(exist_ok=True)
 
-        for part in catalog["catalog"]:
-            for article in part["part"]:
+        for part in catalog.catalog:
+            for article in part.part:
 
                 if episodes and \
-                        int(article["sort_number"]) not in episodes:
+                        int(article.sort_number) not in episodes:
                     continue
 
                 fname = show_dir / "{}.mp3".format(
-                    sanitize_filename(article["title"])
+                    sanitize_filename(article.title)
                 )
                 if not fname.exists():
-                    urlretrieve(article["media_key_full_url"], fname)
+                    urlretrieve(article.media_key_full_url, fname)
 
                 if not no_tag:
                     self.retag(str(fname), article, catalog, series)
@@ -102,21 +105,21 @@ class Visitor:
 
         catalog = self.get_catalog(id)
 
-        show_dir = Path(catalog["title"])
+        show_dir = Path(catalog.title)
         show_dir.mkdir(exist_ok=True)
 
-        for part in catalog["catalog"]:
-            for article in part["part"]:
+        for part in catalog.catalog:
+            for article in part.part:
 
                 if episodes and \
-                        int(article["sort_number"]) not in episodes:
+                        int(article.sort_number) not in episodes:
                     continue
 
                 fname = show_dir / "{}.html".format(
-                    sanitize_filename(article["title"])
+                    sanitize_filename(article.title)
                 )
                 if not fname.exists():
-                    urlretrieve(article["content_url"], fname)
+                    urlretrieve(article.content_url, fname)
 
                     with open(fname) as f:
                         content = f.read()
@@ -138,22 +141,22 @@ class Visitor:
         logger.debug(f"save_transcript_with_single_file id {id}")
 
         catalog = self.get_catalog(id)
-        show_dir = Path(catalog["title"])
+        show_dir = Path(catalog.title)
         show_dir.mkdir(exist_ok=True)
 
-        for part in catalog["catalog"]:
-            for article in part["part"]:
-                if episodes and int(article["sort_number"]) not in episodes:
+        for part in catalog.catalog:
+            for article in part.part:
+                if episodes and int(article.sort_number) not in episodes:
                     continue
 
                 fname = show_dir / "{}.html".format(
-                    sanitize_filename(article["title"])
+                    sanitize_filename(article.title)
                 )
                 if not fname.exists():
                     command = [
                         single_file_exec_path,
                         "https://www.vistopia.com.cn/article/"
-                        + article["article_id"],
+                        + article.article_id,
                         str(fname),
                         "--browser-cookies-file=" + cookie_file_path
                     ]
@@ -168,9 +171,9 @@ class Visitor:
     @staticmethod
     def retag(
         fname: str,
-        article_info: dict,
-        catalog_info: dict,
-        series_info: dict
+        article_info: RetagArticle,
+        catalog_info: Catalog,
+        series_info: RetagSeries
     ):
 
         from mutagen.easyid3 import EasyID3
@@ -183,11 +186,11 @@ class Visitor:
             # See: https://github.com/quodlibet/mutagen/issues/327
             track = EasyID3()
 
-        track['title'] = article_info['title']
-        track['album'] = series_info['title']
-        track['artist'] = series_info['author']
-        track['tracknumber'] = str(article_info['sort_number'])
-        track['website'] = article_info['content_url']
+        track['title'] = article_info.title
+        track['album'] = series_info.title
+        track['artist'] = series_info.author
+        track['tracknumber'] = str(article_info.sort_number)
+        track['website'] = article_info.content_url
 
         try:
             track.save(fname)
@@ -195,7 +198,7 @@ class Visitor:
             print(f"Error saving ID3 tags: {e}")
 
     @staticmethod
-    def retag_cover(fname, article_info, catalog_info, series_info):
+    def retag_cover(fname, article_info, catalog_info: Catalog, series_info):
 
         from mutagen.id3 import ID3, APIC
 
@@ -207,7 +210,7 @@ class Visitor:
             urlcleanup()
             return cover
 
-        cover = _get_cover(catalog_info["background_img"])
+        cover = _get_cover(catalog_info.background_img)
 
         track = ID3(fname)
         track["APIC"] = APIC(encoding=3, mime="image/jpeg",

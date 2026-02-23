@@ -16,16 +16,16 @@ def visitor():
 def test_get_catalog(visitor):
     catalog = visitor.get_catalog(id=11)
     assert catalog
-    assert catalog.get("author") == "梁文道"
-    assert catalog.get("title") == "八分"
+    assert catalog.author == "梁文道"
+    assert catalog.title == "八分"
 
-    assert isinstance(catalog.get("catalog"), list)
+    assert isinstance(catalog.catalog, list)
 
 
 def test_get_content_show(visitor):
     content_show = visitor.get_content_show(id=11)
-    assert content_show.get("author") == "梁文道"
-    assert content_show.get("title") == "八分"
+    assert content_show.author == "梁文道"
+    assert content_show.title == "八分"
 
 
 def test_save_show(visitor, tmpdir):
@@ -75,13 +75,13 @@ def test_search(visitor: Visitor, keyword: str, expected: tuple):
     data = visitor.search(keyword)
     assert isinstance(data, list)
     for k in ("id", "author", "title", "share_desc", "data_type"):
-        assert all([k in item.keys() for item in data])
+        assert all([hasattr(item, k) for item in data])
     assert any([
         (
-            int(item["id"]),
-            item["author"],
-            item["title"],
-            item["share_desc"],
-            item["data_type"],
+            int(item.id),
+            item.author,
+            item.title,
+            item.share_desc,
+            item.data_type,
         ) == expected for item in data
     ])

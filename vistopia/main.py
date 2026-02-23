@@ -10,6 +10,7 @@ from os import environ
 from .visitor import Visitor
 from .utils import range_expand
 from .__version__ import __version__
+from .models import dump_model
 
 logger = getLogger(__name__)
 
@@ -51,19 +52,19 @@ def main(ctx: click.Context, **argv):
 def search(ctx: click.Context, **argv):
     visitor: Visitor = ctx.obj.visitor
     search_result_list = visitor.search(argv.pop("keyword"))
-    logger.debug(json.dumps(search_result_list, indent=2, ensure_ascii=False))
+    logger.debug(json.dumps([dump_model(item) for item in search_result_list], indent=2, ensure_ascii=False))
 
     table = []
     for item in search_result_list:
-        if item["data_type"] != "content":
+        if item.data_type != "content":
             continue
-        author = item["author"]
-        if item["subtitle"]:
-            title = "%s: %s" % ([item["title"], item["subtitle"]])
+        author = item.author
+        if item.subtitle:
+            title = "%s: %s" % ([item.title, item.subtitle])
         else:
-            title = item["title"]
-        desc = item["share_desc"]
-        content_id = item["id"]
+            title = item.title
+        desc = item.share_desc
+        content_id = item.id
         table.append((content_id, author, title, desc))
 
     click.echo(tabulate(table))
@@ -78,8 +79,8 @@ def subscriptions(ctx: click.Context):
 
     table = []
     for show in visitor.get_user_subscriptions_list():
-        title = ": ".join([show["title"], show["subtitle"]])
-        content_id = show["content_id"]
+        title = ": ".join([show.title, show.subtitle])
+        content_id = show.content_id
         table.append((content_id, title))
 
     click.echo(tabulate(table))
@@ -94,27 +95,27 @@ def show_content(ctx: click.Context, **argv):
     content_id = argv.pop("id")
     logger.debug(visitor.get_content_show(content_id))
     logger.debug(
-        json.dumps(visitor.get_catalog(content_id), indent=2, ensure_ascii=False)
+        json.dumps(dump_model(visitor.get_catalog(content_id)), indent=2, ensure_ascii=False)
     )
 
     catalog = visitor.get_catalog(content_id)
 
-    click.echo(f"{catalog['title']}")
+    click.echo(f"{catalog.title}")
     click.echo()
-    click.echo(f"艺人: {catalog['author']}")
-    click.echo(f"类型: {catalog['type']}")
+    click.echo(f"艺人: {catalog.author}")
+    click.echo(f"类型: {catalog.type}")
     click.echo()
 
-    for part in catalog["catalog"]:
-        click.echo(f"{part['catalog_number']}  {part['catalog_title']}")
+    for part in catalog.catalog:
+        click.echo(f"{part.catalog_number}  {part.catalog_title}")
         table = []
-        for article in part["part"]:
+        for article in part.part:
             table.append(
                 (
-                    article["sort_number"],
+                    article.sort_number,
                     # article["article_id"],
-                    article["title"],
-                    article["duration_str"],
+                    article.title,
+                    article.duration_str,
                 )
             )
         click.echo(tabulate(table))
@@ -132,7 +133,7 @@ def save_show(ctx: click.Context, **argv):
 
     logger.debug(
         json.dumps(
-            ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False
+            dump_model(ctx.obj.visitor.get_catalog(content_id)), indent=2, ensure_ascii=False
         )
     )
 
@@ -166,7 +167,7 @@ def save_transcript(ctx: click.Context, **argv):
 
     logger.debug(
         json.dumps(
-            ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False
+            dump_model(ctx.obj.visitor.get_catalog(content_id)), indent=2, ensure_ascii=False
         )
     )
 

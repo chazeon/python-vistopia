@@ -17,11 +17,19 @@ from typing import Any, List, Optional
 from pydantic import BaseModel, Field
 
 
-class VistopiaModel(BaseModel):
-    """Shared base model for Vistopia API schemas."""
-    class Config:
-        extra = "allow"
-        allow_population_by_field_name = True
+if hasattr(BaseModel, "model_config"):
+    from pydantic import ConfigDict
+
+    class VistopiaModel(BaseModel):
+        """Shared base model for Vistopia API schemas."""
+
+        model_config = ConfigDict(extra="allow")
+else:
+    class VistopiaModel(BaseModel):
+        """Shared base model for Vistopia API schemas."""
+
+        class Config:
+            extra = "allow"
 
 
 class Article(VistopiaModel):
@@ -56,6 +64,21 @@ class Article(VistopiaModel):
     type: Optional[str] = None
     vid: Optional[str] = None
     video_poster: Optional[str] = None
+
+
+class RetagArticle(VistopiaModel):
+    """Minimal article payload accepted by `Visitor.retag`."""
+
+    title: str
+    sort_number: str
+    content_url: Optional[str] = None
+
+
+class RetagSeries(VistopiaModel):
+    """Minimal series payload accepted by `Visitor.retag`."""
+
+    title: str
+    author: str
 
 
 class CatalogPart(VistopiaModel):
@@ -150,7 +173,7 @@ class ContentShow(VistopiaModel):
     promotion_desc: Optional[str] = None
     promotion_price: Optional[str] = None
     question_tips: Optional[str] = None
-    range: Optional[str] = None
+    range: Optional[Any] = None
     relate_content: Optional[Any] = None
     relate_contents: Optional[Any] = None
     relate_image: Optional[str] = None
@@ -236,24 +259,14 @@ class SearchItem(VistopiaModel):
     vip_type: Optional[str] = None
 
 
-class SearchPage(PaginationMeta):
-    """Paginated `data` object returned by `search/web`."""
+class SearchResult(PaginationMeta):
+    """Top-level `search/web` payload (paginated list in `data`)."""
     data: List[SearchItem]
 
 
-class SubscriptionsPage(PaginationMeta):
-    """Paginated `data` object returned by `user/subscriptions-list`."""
+class SubscriptionsList(PaginationMeta):
+    """Top-level `user/subscriptions-list` payload (paginated list in `data`)."""
     data: List[SubscriptionItem]
-
-
-class SearchResult(VistopiaModel):
-    """Top-level `search/web` payload (`data` is a pagination object)."""
-    data: SearchPage
-
-
-class SubscriptionsList(VistopiaModel):
-    """Top-level `user/subscriptions-list` payload (`data` is pagination)."""
-    data: SubscriptionsPage
 
 
 def validate_model(model_cls, payload):

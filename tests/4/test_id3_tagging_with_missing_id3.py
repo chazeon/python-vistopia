@@ -8,6 +8,7 @@ TESTS_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(TESTS_DIR.parent))
 sys.path.insert(0, str(TESTS_DIR.parent / "vistopia"))
 from vistopia.visitor import Visitor
+from vistopia.models import RetagArticle, RetagSeries, Catalog
 
 CURR_TEST_DIR = Path(__file__).parent
 
@@ -36,16 +37,21 @@ def test_id3_tagging_with_missing_id3(tmpdir):
 
     Visitor.retag(
         test_mp3,
-        article_info={
-            "title": "测试标题",
-            "sort_number": "7",
-            "content_url": "http://example.com",
-        },
-        series_info={
-            "title": "测试系列",
-            "author": "测试作者",
-        },
-        catalog_info={}
+        article_info=RetagArticle(
+            title="测试标题",
+            sort_number="7",
+            content_url="http://example.com",
+        ),
+        series_info=RetagSeries(
+            title="测试系列",
+            author="测试作者",
+        ),
+        catalog_info=Catalog(
+            author="测试作者",
+            title="测试系列",
+            type="charge",
+            catalog=[],
+        )
     )
 
     tag = EasyID3(test_mp3)
@@ -53,4 +59,3 @@ def test_id3_tagging_with_missing_id3(tmpdir):
     assert tag["title"] == ["测试标题"]
     assert tag["album"] == ["测试系列"]
     assert tag["artist"] == ["测试作者"]
-

@@ -6,10 +6,8 @@ from vistopia.models import (
     Catalog,
     CatalogPart,
     ContentShow,
-    SearchPage,
     SearchItem,
     SearchResult,
-    SubscriptionsPage,
     SubscriptionItem,
     SubscriptionsList,
     validate_model,
@@ -30,9 +28,8 @@ def test_models_cover_all_keys_used_by_runtime_code():
     assert {"author", "title"} <= _field_names(ContentShow)
     assert {"data"} <= _field_names(SubscriptionsList)
     assert {"content_id", "title", "subtitle"} <= _field_names(SubscriptionItem)
-    assert {"data"} <= _field_names(SearchResult)
-    assert {"data", "current_page", "from_", "last_page"} <= _field_names(SearchPage)
-    assert {"data", "current_page", "from_", "last_page"} <= _field_names(SubscriptionsPage)
+    assert {"data", "current_page", "from_", "last_page"} <= _field_names(SearchResult)
+    assert {"data", "current_page", "from_", "last_page"} <= _field_names(SubscriptionsList)
     assert {"id", "author", "title", "share_desc", "data_type", "subtitle"} <= _field_names(SearchItem)
 
 
@@ -67,31 +64,29 @@ def test_catalog_model_parses_nested_structure():
 
 def test_search_result_coerces_numeric_id_from_string():
     payload = {
-        "data": {
-            "current_page": 1,
-            "from": 1,
-            "last_page": 1,
-            "next_page_url": None,
-            "per_page": 20,
-            "prev_page_url": None,
-            "to": 1,
-            "total": 1,
-            "data": [
-                {
-                    "id": "11",
-                    "author": "梁文道",
-                    "title": "八分",
-                    "share_desc": "知识只求八分饱",
-                    "data_type": "content",
-                    "subtitle": "",
-                }
-            ],
-        }
+        "current_page": 1,
+        "from": 1,
+        "last_page": 1,
+        "next_page_url": None,
+        "per_page": 20,
+        "prev_page_url": None,
+        "to": 1,
+        "total": 1,
+        "data": [
+            {
+                "id": "11",
+                "author": "梁文道",
+                "title": "八分",
+                "share_desc": "知识只求八分饱",
+                "data_type": "content",
+                "subtitle": "",
+            }
+        ],
     }
 
     model = validate_model(SearchResult, payload)
-    assert model.data.data[0].id == 11
-    assert model.data.from_ == 1
+    assert model.data[0].id == 11
+    assert model.from_ == 1
 
 
 def test_catalog_model_raises_on_missing_required_fields():
