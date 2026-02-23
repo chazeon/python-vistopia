@@ -13,12 +13,14 @@ dynamic = ["version"]
 dependencies = [
     "click",
     "mutagen",
+    "pydantic>=2,<3; python_version >= '3.8'",
+    "pydantic>=1.8.2,<1.9; python_version < '3.8'",
     "pathvalidate",
     "requests",
     "tabulate",
     "wcwidth",
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.6.1"
 
 [project.optional-dependencies]
 dev = [

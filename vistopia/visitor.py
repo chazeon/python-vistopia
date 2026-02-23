@@ -6,6 +6,14 @@ from functools import lru_cache
 from typing import Optional
 from pathvalidate import sanitize_filename
 
+from .models import (
+    Catalog,
+    ContentShow,
+    SearchResult,
+    SubscriptionsList,
+    dump_model,
+    validate_model,
+)
 
 logger = getLogger(__name__)
 
@@ -34,26 +42,28 @@ class Visitor:
     @lru_cache()
     def get_catalog(self, id: int):
         response = self.get_api_response(f"content/catalog/{id}")
-        return response
+        return dump_model(validate_model(Catalog, response))
 
     @lru_cache()
     def get_user_subscriptions_list(self):
         data = []
         while True:
             response = self.get_api_response("user/subscriptions-list")
-            data.extend(response["data"])
+            subscriptions = validate_model(SubscriptionsList, response)
+            data.extend([dump_model(item) for item in subscriptions.data.data])
             break
         return data
 
     @lru_cache()
     def search(self, keyword: str) -> list:
         response = self.get_api_response("search/web", {'keyword': keyword})
-        return response["data"]
+        result = validate_model(SearchResult, response)
+        return [dump_model(item) for item in result.data.data]
 
     @lru_cache()
     def get_content_show(self, id: int):
         response = self.get_api_response(f"content/content-show/{id}")
-        return response
+        return dump_model(validate_model(ContentShow, response))
 
     def save_show(self, id: int,
                   no_tag: bool = False, no_cover: bool = False,
