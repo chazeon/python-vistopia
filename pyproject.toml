@@ -7,6 +7,18 @@ dynamic = ["version"]
 dependencies = ["requests", "mutagen", "click", "tabulate", "wcwidth", "pathvalidate"]
 requires-python = ">=3.6"
 
+[project.optional-dependencies]
+dev = [
+    "autopep8",
+    "pytest",
+    "pytest-cov",
+    "pytest_click",
+    "flake8",
+    "mypy",
+    "types-requests",
+    "types-tabulate",
+]
+
 [project.scripts]
 vistopian = "vistopia:main.main"
 

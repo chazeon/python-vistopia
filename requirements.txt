@@ -1,6 +1,0 @@
-requests
-mutagen
-click
-tabulate
-wcwidth
-pathvalidate

@@ -1,8 +1,0 @@
-autopep8
-pytest
-pytest-cov
-pytest_click
-flake8
-mypy
-types-requests
-types-tabulate
