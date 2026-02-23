@@ -33,7 +33,7 @@ class Context:
 def main(ctx: click.Context, **argv):
 
     verbosity = argv.pop("verbosity").upper()
-    logging.basicConfig(format='%(asctime)s %(message)s', level=verbosity)
+    logging.basicConfig(format="%(asctime)s %(message)s", level=verbosity)
 
     token = environ.get("VISTOPIA_API_TOKEN", None)
     token = argv.get("token", None) or token
@@ -44,8 +44,9 @@ def main(ctx: click.Context, **argv):
 
 
 @main.command("search", help="搜索节目")
-@click.option("--keyword", "-k", type=click.STRING, required=True,
-              help="Search keyword.")
+@click.option(
+    "--keyword", "-k", type=click.STRING, required=True, help="Search keyword."
+)
 @click.pass_context
 def search(ctx: click.Context, **argv):
     visitor: Visitor = ctx.obj.visitor
@@ -58,11 +59,11 @@ def search(ctx: click.Context, **argv):
             continue
         author = item["author"]
         if item["subtitle"]:
-            title = "%s: %s" % ([item['title'], item['subtitle']])
+            title = "%s: %s" % ([item["title"], item["subtitle"]])
         else:
-            title = item['title']
-        desc = item['share_desc']
-        content_id = item['id']
+            title = item["title"]
+        desc = item["share_desc"]
+        content_id = item["id"]
         table.append((content_id, author, title, desc))
 
     click.echo(tabulate(table))
@@ -77,7 +78,7 @@ def subscriptions(ctx: click.Context):
 
     table = []
     for show in visitor.get_user_subscriptions_list():
-        title = ": ".join([show['title'], show['subtitle']])
+        title = ": ".join([show["title"], show["subtitle"]])
         content_id = show["content_id"]
         table.append((content_id, title))
 
@@ -92,30 +93,36 @@ def show_content(ctx: click.Context, **argv):
 
     content_id = argv.pop("id")
     logger.debug(visitor.get_content_show(content_id))
-    logger.debug(json.dumps(
-        visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+    logger.debug(
+        json.dumps(visitor.get_catalog(content_id), indent=2, ensure_ascii=False)
+    )
 
-    table = []
     catalog = visitor.get_catalog(content_id)
-    for part in catalog["catalog"]:
-        for article in part["part"]:
-            table.append((
-                article["sort_number"],
-                # article["article_id"],
-                article["title"],
-                article["duration_str"],
-            ))
 
-    click.echo(f"Title: {catalog['title']}")
-    click.echo(f"Author: {catalog['author']}")
-    click.echo(f"Type: {catalog['type']}")
-    click.echo(tabulate(table))
+    click.echo(f"{catalog['title']}")
+    click.echo()
+    click.echo(f"艺人: {catalog['author']}")
+    click.echo(f"类型: {catalog['type']}")
+    click.echo()
+
+    for part in catalog["catalog"]:
+        click.echo(f"{part['catalog_number']}  {part['catalog_title']}")
+        table = []
+        for article in part["part"]:
+            table.append(
+                (
+                    article["sort_number"],
+                    # article["article_id"],
+                    article["title"],
+                    article["duration_str"],
+                )
+            )
+        click.echo(tabulate(table))
 
 
 @main.command("save-show", help="保存节目至本地，并添加封面和 ID3 信息")
 @click.option("--id", type=click.INT, required=True)
-@click.option("--no-tag", is_flag=True, default=False,
-              help="Do not add IDv3 tags.")
+@click.option("--no-tag", is_flag=True, default=False, help="Do not add IDv3 tags.")
 @click.option("--episode-id", help="Episode ID in the form '1-3,4,8'")
 @click.pass_context
 def save_show(ctx: click.Context, **argv):
@@ -123,8 +130,11 @@ def save_show(ctx: click.Context, **argv):
     episode_id = argv.pop("episode_id", None)
     episodes = set(range_expand(episode_id) if episode_id else [])
 
-    logger.debug(json.dumps(
-        ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+    logger.debug(
+        json.dumps(
+            ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False
+        )
+    )
 
     ctx.obj.visitor.save_show(
         content_id,
@@ -136,12 +146,16 @@ def save_show(ctx: click.Context, **argv):
 @main.command("save-transcript", help="保存节目文稿至本地")
 @click.option("--id", type=click.INT, required=True)
 @click.option("--episode-id", help="Episode ID in the form '1-3,4,8'")
-@click.option("--single-file-exec-path", type=click.Path(),
-              help="Path to the single-file CLI tool")
-@click.option("--cookie-file-path", type=click.Path(),
-              help=(
-                  "Path to the browser cookie file "
-                  "(only needed in single-file mode)"))
+@click.option(
+    "--single-file-exec-path",
+    type=click.Path(),
+    help="Path to the single-file CLI tool",
+)
+@click.option(
+    "--cookie-file-path",
+    type=click.Path(),
+    help=("Path to the browser cookie file " "(only needed in single-file mode)"),
+)
 @click.pass_context
 def save_transcript(ctx: click.Context, **argv):
     content_id = argv.pop("id")
@@ -150,21 +164,21 @@ def save_transcript(ctx: click.Context, **argv):
     cookie_file_path = argv.pop("cookie_file_path")
     episodes = set(range_expand(episode_id) if episode_id else [])
 
-    logger.debug(json.dumps(
-        ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False))
+    logger.debug(
+        json.dumps(
+            ctx.obj.visitor.get_catalog(content_id), indent=2, ensure_ascii=False
+        )
+    )
 
     if single_file_exec_path and cookie_file_path:
         ctx.obj.visitor.save_transcript_with_single_file(
             content_id,
             episodes=episodes,
             single_file_exec_path=single_file_exec_path,
-            cookie_file_path=cookie_file_path
+            cookie_file_path=cookie_file_path,
         )
     else:
-        ctx.obj.visitor.save_transcript(
-            content_id,
-            episodes=episodes
-        )
+        ctx.obj.visitor.save_transcript(content_id, episodes=episodes)
 
 
 if __name__ == "__main__":
