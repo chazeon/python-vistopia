@@ -30,3 +30,11 @@ include = ["vistopia"]
 
 [tool.setuptools.dynamic]
 version = {attr = "vistopia.__version__"}
+
+[tool.pytest.ini_options]
+addopts = "--cov vistopia --doctest-modules --cov-report=xml --cov-report=term"
+
+[tool.mypy]
+files = ["vistopia", "tests"]
+check_untyped_defs = true
+show_error_codes = true

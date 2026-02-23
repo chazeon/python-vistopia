@@ -39,10 +39,10 @@ jobs:
         uv run flake8 vistopia tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        uv run pytest --cov=vistopia --cov-report=xml
+        uv run pytest
     - name: Type check with mypy
       run: |
-        uv run mypy .
+        uv run mypy
     - uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
